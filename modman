@@ -1,0 +1,3 @@
+code     app/code/local/VTI/ShipmentReport/
+VTI_ShipmentReport.xml      app/etc/modules/VTI_ShipmentReport.xml
+design/adminhtml/layout/vti_shipmentreport.xml       app/design/adminhtml/default/default/layout/vti_shipmentreport.xml

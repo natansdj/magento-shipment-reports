@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<config>
+    <modules>
+        <VTI_ShipmentReport>
+            <version>0.1.0</version>
+        </VTI_ShipmentReport>
+    </modules>
+    <global>
+        <models>
+            <vti_shipmentreport>
+                <class>VTI_ShipmentReport_Model</class>
+                <resourceModel>vti_shipmentreport_resource</resourceModel>
+            </vti_shipmentreport>
+            <vti_shipmentreport_resource>
+                <class>VTI_ShipmentReport_Model_Resource</class>
+            </vti_shipmentreport_resource>
+        </models>
+        <blocks>
+            <vti_shipmentreport>
+                <class>VTI_ShipmentReport_Block</class>
+            </vti_shipmentreport>
+        </blocks>
+        <helpers>
+            <vti_shipmentreport>
+                <class>VTI_ShipmentReport_Helper</class>
+            </vti_shipmentreport>
+        </helpers>
+    </global>
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <vti_shipmentreport before="Mage_Adminhtml">VTI_ShipmentReport_Adminhtml</vti_shipmentreport>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
+    <adminhtml>
+        <layout>
+            <updates>
+                <vti_shipmentreport>
+                    <file>vti_shipmentreport.xml</file>
+                </vti_shipmentreport>
+            </updates>
+        </layout>
+    </adminhtml>
+</config>

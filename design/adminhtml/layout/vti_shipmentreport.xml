@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<layout>
+    <adminhtml_sales_shipmentdetail_report>
+        <reference name="content">
+            <block type="vti_shipmentreport/adminhtml_sales_shipmentdetail" name="vti_shipmentreport.sales.shipmentdetail">
+                <block type="vti_shipmentreport/adminhtml_base_grid_filter_form" name="grid.filter.form"/>
+            </block>
+        </reference>
+    </adminhtml_sales_shipmentdetail_report>
+</layout>
