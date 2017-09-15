@@ -2,14 +2,9 @@
 
 class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_ShipmentReport_Block_Adminhtml_Base_Grid_Grid
 {
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->setFilterVisibility(false);
-        $this->setDefaultSort('created_at');
-        $this->setDefaultDir('DESC');
-    }
+    protected $_filterVisibility = false;
+    protected $_defaultSort = 'date';
+    protected $_defaultDir = 'desc';
 
     /**
      * @param Varien_Object $filterData
@@ -46,7 +41,7 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
 
         $collection
             ->getSelect()
-            ->columns('DATE(main_table.created_at) AS date')
+            ->columns("DATE(main_table.created_at) AS {$this->_defaultSort}")
             ->joinLeft(
                 array('shipment_item' => Mage::getSingleton('core/resource')->getTableName('sales_flat_shipment_item')),
                 'main_table.entity_id = shipment_item.parent_id',
@@ -93,10 +88,7 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
                     'configurable_id' => 'configurable.entity_id',
                     'configurable_sku' => 'configurable.sku',
                 )
-            )
-            ->group('shipment_item.entity_id');
-
-        Mage::log((string)$collection->getSelect());
+            );
 
         return $collection;
     }
@@ -122,6 +114,11 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
             }
         }
 
+        //Add group to collection here
+        if (array_key_exists('shipment_item', $this->getCollection()->getSelect()->getPart('from'))) {
+            $this->getCollection()->getSelect()->group('shipment_item.entity_id');
+        }
+
         return $this;
     }
 
@@ -137,6 +134,7 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
 
         $idsSelect
             ->columns(array('entity_id'), 'configurable')
+            ->columns("DATE(main_table.created_at) AS {$this->_defaultSort}")
             ->distinct(true);
 
         return $collection->getConnection()->fetchCol($idsSelect);
@@ -144,6 +142,7 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
 
     protected function _prepareColumns()
     {
+        /** @var VTI_ShipmentReport_Helper_Data $helper */
         $helper = Mage::helper('vti_shipmentreport');
 
         $this->addColumn('date', array(
