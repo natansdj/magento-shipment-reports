@@ -2,7 +2,16 @@
 
 abstract class VTI_ShipmentReport_Block_Adminhtml_Base_Grid_Grid extends Mage_Adminhtml_Block_Widget_Grid
 {
-    abstract protected function _getGridCollection($filterData);
+    /**
+     * @param $row
+     * @return bool
+     */
+    public function getRowUrl($row)
+    {
+        $res = parent::getRowUrl($row);
+        //Disable pointer on row block grid if no parentRowUrl
+        return ($res && $res !== '#' ? $res : false);
+    }
 
     protected function _prepareCollection()
     {
@@ -23,4 +32,6 @@ abstract class VTI_ShipmentReport_Block_Adminhtml_Base_Grid_Grid extends Mage_Ad
 
         return parent::_prepareCollection();
     }
+
+    abstract protected function _getGridCollection($filterData);
 }

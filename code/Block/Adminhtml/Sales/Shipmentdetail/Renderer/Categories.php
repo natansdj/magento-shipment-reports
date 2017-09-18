@@ -4,12 +4,23 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Renderer_Categorie
 {
 
     /**
-     * Render categories to show in export
+     * Render categories to show in grid
      *
      * @param Varien_Object $row
      * @return string
      */
     public function render(Varien_Object $row)
+    {
+        $cat_paths = $this->baseRender($row);
+
+        return implode("<br />", $cat_paths);
+    }
+
+    /**
+     * @param Varien_Object $row
+     * @return array
+     */
+    protected function baseRender(Varien_Object $row)
     {
         /** @var VTI_ShipmentReport_Helper_Data $helper */
         $helper = Mage::helper('vti_shipmentreport');
@@ -27,6 +38,19 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Renderer_Categorie
         }
         sort($cat_paths);
 
-        return implode("<br />", $cat_paths);
+        return $cat_paths;
+    }
+
+    /**
+     * Render categories to show in export
+     *
+     * @param Varien_Object $row
+     * @return string
+     */
+    public function renderExport(Varien_Object $row)
+    {
+        $cat_paths = $this->baseRender($row);
+
+        return implode(", \n", $cat_paths);
     }
 }
