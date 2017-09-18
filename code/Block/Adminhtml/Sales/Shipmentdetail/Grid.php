@@ -8,20 +8,22 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
 
     /**
      * @param Varien_Object $filterData
-     * @return Mage_Sales_Model_Resource_Order_Shipment_Collection
+     * @return Mage_Sales_Model_Resource_Collection_Abstract
      */
     protected function _getGridCollection($filterData)
     {
         //execute
-        /** @var Mage_Sales_Model_Resource_Order_Shipment_Collection $collection */
-        $collection = Mage::getResourceModel('sales/order_shipment_collection');
+        /** @var Mage_Sales_Model_Resource_Order_Shipment_Item_Collection $collection */
+        $collection = Mage::getResourceModel('vti_shipmentreport/order_shipment_item_collection');
         $collection
-            ->addFieldToFilter('main_table.created_at', array('gteq' => $filterData->getData('from')))
-            ->addFieldToFilter('main_table.created_at', array('lteq' => $filterData->getData('to')));
+            ->addFieldToFilter('shipment.created_at', array('gteq' => $filterData->getData('from')))
+            ->addFieldToFilter('shipment.created_at', array('lteq' => $filterData->getData('to')));
         $collection->addFieldToSelect(
             array(
-                'created_at',
-                'increment_id'
+                'name',
+                'sku',
+                'qty',
+                'product_id',
             )
         );
 
@@ -39,39 +41,58 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
         $vb_optionTable = $vb_attributeCode . '_option_value_t1';
         $store_id = 0;
 
+        /** @var Magento_Db_Adapter_Pdo_Mysql $adapter */
+        $adapter = Mage::getSingleton('core/resource')->getConnection('core_read');
+        $shipmentTrackSelect = $adapter->select()
+            ->from(
+                Mage::getSingleton('core/resource')->getTableName('sales_flat_shipment_track'),
+                array(
+                    'order_id',
+                    'title',
+                    'expected_time'
+                )
+            )
+            ->group('parent_id');
+
         $collection
             ->getSelect()
-            ->columns("DATE(main_table.created_at) AS {$this->_defaultSort}")
+            ->columns("DATE(shipment.created_at) AS date")
             ->joinLeft(
-                array('shipment_item' => Mage::getSingleton('core/resource')->getTableName('sales_flat_shipment_item')),
-                'main_table.entity_id = shipment_item.parent_id',
+                array('shipment' => Mage::getSingleton('core/resource')->getTableName('sales/shipment')),
+                'main_table.parent_id = shipment.entity_id',
                 array(
-                    'entity_id' => 'shipment_item.entity_id',
-                    'name' => 'shipment_item.name',
-                    'sku' => 'shipment_item.sku',
-                    'qty' => 'shipment_item.qty',
+                    'created_at' => 'shipment.created_at',
                 )
-            )->joinLeft(
-                array('shipment_track' => Mage::getSingleton('core/resource')->getTableName('sales_flat_shipment_track')),
-                'main_table.order_id = shipment_track.order_id',
+            )
+            ->joinLeft(
+                array('shipment_track' => $shipmentTrackSelect),
+                'shipment.order_id = shipment_track.order_id',
                 array(
                     'track_method' => 'shipment_track.title',
                     'track_time' => 'shipment_track.expected_time'
                 )
-            )->joinLeft(
+            )
+            ->joinLeft(
+                array('shipment_grid' => Mage::getSingleton('core/resource')->getTableName('sales_flat_shipment_grid')),
+                'shipment.entity_id = shipment_grid.entity_id',
+                array(
+                    'order_increment_id' => 'shipment_grid.order_increment_id',
+                )
+            )
+            ->joinLeft(
                 array('shipping_address' => Mage::getSingleton('core/resource')->getTableName('sales_flat_order_address')),
-                'shipping_address.entity_id = main_table.shipping_address_id AND shipping_address.address_type=\'shipping\'',
+                'shipping_address.entity_id = shipment.shipping_address_id AND shipping_address.address_type=\'shipping\'',
                 array('region', 'country_id', 'city')
             )
             ->joinLeft(
                 array('order_items' => Mage::getSingleton('core/resource')->getTableName('sales_flat_order_item')),
-                'order_items.order_id = main_table.entity_id AND order_items.parent_item_id = NULL',
+                'order_items.order_id = shipment.entity_id AND order_items.parent_item_id = NULL',
                 array(
-                    'store_id' => "main_table.store_id"
+                    'store_id' => "shipment.store_id"
                 )
             )->joinLeft(
                 array($vb_valueTable => $vb_attribute->getBackend()->getTable()),
-                "shipment_item.product_id={$vb_valueTable}.entity_id"
+                "main_table.product_id={$vb_valueTable}.entity_id"
                 . " AND {$vb_valueTable}.attribute_id='{$vb_attributeId}'"
                 . " AND {$vb_valueTable}.store_id={$store_id}",
                 array('vesbrand' => "{$vb_valueTable}.value")
@@ -80,64 +101,31 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
                 array($vb_optionTable => $vb_brand_table),
                 "{$vb_optionTable}.{$vb_tablePkName}={$vb_valueTable}.value",
                 array('vesbrand_title' => "{$vb_optionTable}.title", 'brand_id')
-            )
-            ->joinLeft(
-                array('configurable' => Mage::getSingleton('core/resource')->getTableName('catalog/product')),
-                'configurable.entity_id = shipment_item.product_id',
-                array(
-                    'configurable_id' => 'configurable.entity_id',
-                    'configurable_sku' => 'configurable.sku',
-                )
             );
+
+        $collection->getSelect()->group('main_table.entity_id');
+
+        $collection->setOrder('main_table.entity_id', 'DESC');
+
+        Mage::log((string)$collection->getSelect());
 
         return $collection;
     }
 
     protected function _afterLoadCollection()
     {
-        $configurableProductsIds = implode(',', $this->getConfigurableIds($this->getCollection()));
-
-        /** @var Magento_Db_Adapter_Pdo_Mysql $connection */
-        $connection = Mage::getSingleton('core/resource')->getConnection('core_read');
-        $catProductTable = Mage::getSingleton('core/resource')->getTableName('catalog_category_product');
-        $sql = "SELECT category_id, product_id FROM `{$catProductTable}` WHERE `product_id` in ({$configurableProductsIds})";
-        $rows = $connection->fetchAll($sql);
-
-        $productCategoriesIds = array();
-        foreach ($rows as $row) {
-            $productCategoriesIds[$row['product_id']][] = $row['category_id'];
-        }
-
-        foreach ($this->getCollection() as $item) {
-            if (array_key_exists($item->getConfigurableId(), $productCategoriesIds)) {
-                $item->setProductCategoriesIds($productCategoriesIds[$item->getConfigurableId()]);
-            }
-        }
-
         //Add group to collection here
-        if (array_key_exists('shipment_item', $this->getCollection()->getSelect()->getPart('from'))) {
-            $this->getCollection()->getSelect()->group('shipment_item.entity_id');
+        if (array_key_exists('main_table', $this->getCollection()->getSelect()->getPart('from'))
+            && !in_array('main_table.entity_id', $this->getCollection()->getSelect()->getPart('group'))
+        ) {
+            $this->getCollection()->getSelect()->group('main_table.entity_id');
         }
 
-        return $this;
-    }
-
-    /**
-     * @param Mage_Sales_Model_Resource_Collection_Abstract|Varien_Data_Collection $collection
-     * @return array
-     */
-    public function getConfigurableIds($collection)
-    {
-        /** @var Varien_Db_Select $idsSelect */
-        $idsSelect = clone $collection->getSelect();
-        $idsSelect->reset(Zend_Db_Select::COLUMNS);
-
-        $idsSelect
-            ->columns(array('entity_id'), 'configurable')
-            ->columns("DATE(main_table.created_at) AS {$this->_defaultSort}")
+        $this->getCollection()
+            ->getSelect()
             ->distinct(true);
 
-        return $collection->getConnection()->fetchCol($idsSelect);
+        return $this;
     }
 
     protected function _prepareColumns()
@@ -156,9 +144,9 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
             'html_decorators' => array('nobr'),
         ));
 
-        $this->addColumn('increment_id', array(
+        $this->addColumn('order_increment_id', array(
             'header' => $helper->__('Order Number'),
-            'index' => 'increment_id',
+            'index' => 'order_increment_id',
             'width' => 100,
             'filter' => false,
             'sortable' => false,

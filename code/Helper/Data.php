@@ -1,6 +1,8 @@
 <?php
+
 class VTI_ShipmentReport_Helper_Data extends Mage_Core_Helper_Abstract
 {
+    public static $tree = null;
     protected $_categories = null;
 
     public function getProductAttributeOptionsByCode($code)
@@ -13,46 +15,68 @@ class VTI_ShipmentReport_Helper_Data extends Mage_Core_Helper_Abstract
         return $attributesOptions;
     }
 
-    public function getCategoriesTree()
+    /**
+     * get categories for options
+     *
+     * @return array
+     */
+    public function getTreeOptions()
     {
-        if (is_null($this->_categories)) {
-            $this->_categories = array();
-            $collection = $this->_getCategoriesCollection();
-            foreach ($collection as $item) {
-                if ($item['level'] == 2) {
-                    $this->_categories[$item['entity_id']] = $item['name'];
-                } else {
-                    if (array_key_exists($item['parent_id'], $this->_categories)) {
-                        $this->_categories[$item['entity_id']] = $this->_categories[$item['parent_id']] . ' > ' . $item['name'];
-                    }
-                }
+        $tree = $this->getTree();
+        $options = array();
+        foreach ($tree as $id => $v) {
+            if ($id == 3) {
+                continue;
             }
+            $options[$id] = $v['full_path'];
         }
-        return $this->_categories;
+        asort($options);
+        return $options;
     }
 
-    protected function _getCategoriesCollection()
+    /**
+     * get categories tree for export
+     *
+     * @return array|null
+     */
+    public function getTree()
     {
-        /** @var Mage_Catalog_Model_Resource_Category_Collection $collection */
-        $collection = Mage::getModel('catalog/category')->getCollection();
+        if (self::$tree) {
+            return self::$tree;
+        }
 
-        // Exclude categories 'sale' and 'new-in'
-        /** @var Mage_Catalog_Model_Resource_Category_Collection $excludedCategories */
-        $excludedCategories = Mage::getModel('catalog/category')->getCollection()
-            ->addAttributeToSelect(array('name', 'entity_id'))
-            ->addAttributeToFilter('url_key', array('sale', 'new-in'))
-        ;
-        $expelledCategoriesIds = implode(',', $excludedCategories->getAllIds());
+        $category_tree = Mage::getModel('catalog/category');
+        $tree = $category_tree->getTreeModel();
+        $tree->load();
 
-        $collection
-            ->addAttributeToSelect(array('parent_id', 'level', 'name', 'is_active'))
-            ->addAttributeToFilter('level', array('gteq' => 2))
-            ->addAttributeToFilter('entity_id', array('nin' => $expelledCategoriesIds))
-            ->addAttributeToFilter('is_active', 1)
-            ->getSelect()
-            ->order('level','DESC')
-        ;
+        $ids = $tree->getCollection()->getAllIds();
+        $categories = array();
+        if ($ids) {
+            foreach ($ids as $id) {
+                $category_tree->load($id);
+                $path = $category_tree->getPath();
+                $p = explode("/", $path);
 
-        return $collection;
+                if (count($p) <= 1 || $p[1] != 3) {
+                    continue;
+                }
+                $categories[$id]['name'] = $category_tree->getName();
+                $categories[$id]['path'] = $path;
+            }
+
+            foreach ($categories as $id => $cat) {
+                $cat['full_path'] = array();
+                $pcat = explode('/', $cat['path']);
+                foreach ($pcat as $c) {
+                    if ($c == 1 || $c == 3) {
+                        continue;
+                    }
+                    $cat['full_path'][] = $categories[$c]['name'];
+                }
+                $categories[$id]['full_path'] = implode(" > ", $cat['full_path']);
+            }
+        }
+        self::$tree = $categories;
+        return self::$tree;
     }
 }
