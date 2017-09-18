@@ -107,8 +107,6 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
 
         $collection->setOrder('main_table.entity_id', 'DESC');
 
-        Mage::log((string)$collection->getSelect());
-
         return $collection;
     }
 
