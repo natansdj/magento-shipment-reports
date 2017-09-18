@@ -212,7 +212,7 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
         ));
 
         $this->addExportType('*/*/exportReportCsv', $helper->__('CSV'));
-        $this->addExportType('*/*/exportReportExcel', $helper->__('Excel XML'));
+//        $this->addExportType('*/*/exportReportExcel', $helper->__('Excel XML'));
 
         return parent::_prepareColumns();
     }

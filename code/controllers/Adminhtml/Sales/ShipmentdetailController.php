@@ -33,7 +33,7 @@ class VTI_ShipmentReport_Adminhtml_Sales_ShipmentdetailController extends Mage_A
     public function exportReportExcelAction()
     {
         $fileName = 'shipment_detail_report.xml';
-        $grid = $this->getLayout()->createBlock('vti_shipmentreport /adminhtml_sales_shipmentdetail_grid');
+        $grid = $this->getLayout()->createBlock('vti_shipmentreport/adminhtml_sales_shipmentdetail_grid');
         $this->_initReportAction($grid);
         $this->_prepareDownloadResponse($fileName, $grid->getExcelFile($fileName));
     }

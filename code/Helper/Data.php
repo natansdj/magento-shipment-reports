@@ -37,9 +37,10 @@ class VTI_ShipmentReport_Helper_Data extends Mage_Core_Helper_Abstract
     /**
      * get categories tree for export
      *
+     * @param string $separator
      * @return array|null
      */
-    public function getTree()
+    public function getTree($separator = " > ")
     {
         if (self::$tree) {
             return self::$tree;
@@ -73,7 +74,7 @@ class VTI_ShipmentReport_Helper_Data extends Mage_Core_Helper_Abstract
                     }
                     $cat['full_path'][] = $categories[$c]['name'];
                 }
-                $categories[$id]['full_path'] = implode(" > ", $cat['full_path']);
+                $categories[$id]['full_path'] = implode($separator, $cat['full_path']);
             }
         }
         self::$tree = $categories;
