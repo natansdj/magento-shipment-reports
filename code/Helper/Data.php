@@ -1,5 +1,14 @@
 <?php
+/**
+ * @category    VTI
+ * @package     VTI_ShipmentReport
+ * @version     1.0.0
+ *
+ */
 
+/**
+ * Class VTI_ShipmentReport_Helper_Data
+ */
 class VTI_ShipmentReport_Helper_Data extends Mage_Core_Helper_Abstract
 {
     public static $tree = null;
@@ -79,5 +88,25 @@ class VTI_ShipmentReport_Helper_Data extends Mage_Core_Helper_Abstract
         }
         self::$tree = $categories;
         return self::$tree;
+    }
+
+    /**
+     * @param $value
+     * @param Mage_Sales_Model_Order_Shipment_Item $row
+     * @param Mage_Adminhtml_Block_Widget_Grid_Column $block
+     * @return mixed
+     */
+    public function decorateHTML($value, $row, $block, $isExport)
+    {
+        if ($isExport) {
+            //Remove html tags, but leave "<" and ">" signs
+//            $val = $block->helper('core')->removeTags($value);
+
+            //unescape html entities
+            $valUnescaped = htmlspecialchars_decode($value, ENT_QUOTES);
+            return $valUnescaped;
+        }
+
+        return $value;
     }
 }

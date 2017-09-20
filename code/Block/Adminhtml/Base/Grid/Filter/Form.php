@@ -1,4 +1,14 @@
 <?php
+/**
+ * @category    VTI
+ * @package     VTI_ShipmentReport
+ * @version     1.0.0
+ *
+ */
+
+/**
+ * Class VTI_ShipmentReport_Block_Adminhtml_Base_Grid_Filter_Form
+ */
 class VTI_ShipmentReport_Block_Adminhtml_Base_Grid_Filter_Form extends Mage_Adminhtml_Block_Widget_Form
 {
     protected function _prepareForm()

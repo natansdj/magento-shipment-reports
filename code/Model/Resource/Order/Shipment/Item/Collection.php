@@ -1,5 +1,14 @@
 <?php
+/**
+ * @category    VTI
+ * @package     VTI_ShipmentReport
+ * @version     1.0.0
+ *
+ */
 
+/**
+ * Class VTI_ShipmentReport_Model_Resource_Order_Shipment_Item_Collection
+ */
 class VTI_ShipmentReport_Model_Resource_Order_Shipment_Item_Collection extends Mage_Sales_Model_Resource_Order_Shipment_Item_Collection
 {
     public function getSize()

@@ -1,5 +1,14 @@
 <?php
+/**
+ * @category    VTI
+ * @package     VTI_ShipmentReport
+ * @version     1.0.0
+ *
+ */
 
+/**
+ * Class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid
+ */
 class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_ShipmentReport_Block_Adminhtml_Base_Grid_Grid
 {
     protected $_filterVisibility = false;
@@ -49,6 +58,7 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
                 array(
                     'order_id',
                     'title',
+                    'expected_date',
                     'expected_time'
                 )
             )
@@ -69,7 +79,8 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
                 'shipment.order_id = shipment_track.order_id',
                 array(
                     'track_method' => 'shipment_track.title',
-                    'track_time' => 'shipment_track.expected_time'
+                    'track_time' => 'shipment_track.expected_time',
+                    'expected_date' => 'shipment_track.expected_date'
                 )
             )
             ->joinLeft(
@@ -131,9 +142,9 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
         /** @var VTI_ShipmentReport_Helper_Data $helper */
         $helper = Mage::helper('vti_shipmentreport');
 
-        $this->addColumn('date', array(
+        $this->addColumn('expected_date', array(
             'header' => $helper->__('Ship Date'),
-            'index' => 'date',
+            'index' => 'expected_date',
             'width' => 100,
             'filter' => false,
             'sortable' => false,
@@ -177,6 +188,7 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
             'index' => 'name',
             'filter' => false,
             'sortable' => false,
+            'frame_callback' => array($helper, 'decorateHTML'),
         ));
 
         $this->addColumn('sku', array(
@@ -200,6 +212,7 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
             'index' => 'vesbrand_title',
             'filter' => false,
             'sortable' => false,
+            'frame_callback' => array($helper, 'decorateHTML')
         ));
 
         $this->addColumn('product_categories_ids', array(
@@ -208,7 +221,7 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
             'width' => 200,
             'filter' => false,
             'sortable' => false,
-            'renderer' => 'vti_shipmentreport/adminhtml_sales_shipmentdetail_renderer_categories',
+            'renderer' => 'vti_shipmentreport/adminhtml_base_grid_renderer_categories',
         ));
 
         $this->addExportType('*/*/exportReportCsv', $helper->__('CSV'));

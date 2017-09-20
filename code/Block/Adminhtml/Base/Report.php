@@ -1,4 +1,14 @@
 <?php
+/**
+ * @category    VTI
+ * @package     VTI_ShipmentReport
+ * @version     1.0.0
+ *
+ */
+
+/**
+ * Class VTI_ShipmentReport_Block_Adminhtml_Base_Report
+ */
 class VTI_ShipmentReport_Block_Adminhtml_Base_Report extends Mage_Adminhtml_Block_Widget_Grid_Container
 {
     protected $_controller = '';
