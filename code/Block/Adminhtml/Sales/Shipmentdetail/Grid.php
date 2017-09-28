@@ -88,6 +88,7 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
                 'shipment.entity_id = shipment_grid.entity_id',
                 array(
                     'order_increment_id' => 'shipment_grid.order_increment_id',
+                    'order_created_at' => 'shipment_grid.order_created_at',
                 )
             )
             ->joinLeft(
@@ -141,6 +142,25 @@ class VTI_ShipmentReport_Block_Adminhtml_Sales_Shipmentdetail_Grid extends VTI_S
     {
         /** @var VTI_ShipmentReport_Helper_Data $helper */
         $helper = Mage::helper('vti_shipmentreport');
+
+        $this->addColumn('product_id', array(
+            'header' => $helper->__('Product ID'),
+            'index' => 'product_id',
+            'width' => 100,
+            'filter' => false,
+            'sortable' => false,
+        ));
+
+        $this->addColumn('order_created_at', array(
+            'header' => $helper->__('Order Date'),
+            'index' => 'order_created_at',
+            'width' => 100,
+            'filter' => false,
+            'sortable' => false,
+            'align' => 'right',
+            'type' => 'datetime',
+            'html_decorators' => array('nobr'),
+        ));
 
         $this->addColumn('expected_date', array(
             'header' => $helper->__('Ship Date'),
